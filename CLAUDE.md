@@ -30,4 +30,4 @@ PWA estática (sin build, sin dependencias, sin CDN) que mide la legibilidad de 
 ## Versiones
 
 - **v2026.01 (2026-10-25)**: primera versión, 82 pruebas. **Publicada** el 2026-10-25 en `cjgaland/legibilidad` · https://cjgaland.github.io/legibilidad/ (GitHub Pages, rama `main`). Publicar = commit + `git push`. Pendiente: enlazarla desde el portal y las hermanas.
-- **v2026.02 (2026-10-25)**: subir informe (PDF, DOCX, TXT, MD; arrastrar y soltar; solo en el navegador), veredicto por apartados y párrafos más difíciles (también en los informes PDF/Word), «Qué cambiar» en cada párrafo difícil y botón «Cambiar» para tecnicismos, pdf.js 6.4.299 local. 82 + 83 pruebas. **En local, sin publicar.**
+- **v2026.02 (2026-10-25)**: subir informe (PDF, DOCX, TXT, MD; arrastrar y soltar; solo en el navegador), veredicto por apartados y párrafos más difíciles (también en los informes PDF/Word), «Qué cambiar» en cada párrafo difícil y botón «Cambiar» para tecnicismos, pdf.js 6.4.299 local. 82 + 83 pruebas. **Publicada** el 2026-10-25.

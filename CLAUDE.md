@@ -25,4 +25,4 @@ PWA estática (sin build, sin dependencias, sin CDN) que mide la legibilidad de 
 
 ## Versiones
 
-- **v2026.01 (2026-10-25)**: primera versión, en local, 82 pruebas. Pendiente: publicar (con permiso) en `cjgaland/legibilidad` · https://cjgaland.github.io/legibilidad/, enlazarla desde el portal y las hermanas.
+- **v2026.01 (2026-10-25)**: primera versión, 82 pruebas. **Publicada** el 2026-10-25 en `cjgaland/legibilidad` · https://cjgaland.github.io/legibilidad/ (GitHub Pages, rama `main`). Publicar = commit + `git push`. Pendiente: enlazarla desde el portal y las hermanas.

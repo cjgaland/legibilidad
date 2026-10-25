@@ -5,8 +5,8 @@
 //  (prefijo «legibilidad-»), para no borrar las de las apps hermanas
 //  que comparten origen.
 // ============================================================
-const CACHE_NAME = "legibilidad-v1";
-const ASSETS = ["./", "./index.html", "./styles.css", "./legibilidad.css", "./xlsx.js", "./docx.js", "./logic.js", "./contenido.js", "./app.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-180.png", "./favicon-32.png", "./favicon-16.png", "./icon-512.svg"];
+const CACHE_NAME = "legibilidad-v2";
+const ASSETS = ["./", "./index.html", "./styles.css", "./legibilidad.css", "./xlsx.js", "./docx.js", "./logic.js", "./lector.js", "./vendor/pdfjs-6.4.299/pdf.min.mjs", "./vendor/pdfjs-6.4.299/pdf.worker.min.mjs", "./contenido.js", "./app.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-180.png", "./favicon-32.png", "./favicon-16.png", "./icon-512.svg"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));

@@ -21,8 +21,8 @@
       document.documentElement.setAttribute("data-tema", t);
     })();
   </script>
-  <link rel="stylesheet" href="styles.css?v=2026.01" />
-  <link rel="stylesheet" href="legibilidad.css?v=2026.01" />
+  <link rel="stylesheet" href="styles.css?v=2026.02" />
+  <link rel="stylesheet" href="legibilidad.css?v=2026.02" />
 </head>
 <body>
 
@@ -82,8 +82,8 @@
         </div>
         <div class="modal-bloque">
           <strong>Cómo se usa</strong>
-          <p>Pega el texto (o pulsa <b>Cargar ejemplo</b>). Al momento verás su puntuación en la escala INFLESZ, <b>tu siguiente paso</b> y lo que conviene cambiar. Guarda las versiones en «Mis textos» y compáralas. Tus textos se quedan en tu dispositivo: no se envían a ningún servidor.</p>
-          <p><b>No pegues datos de pacientes</b>: la app está pensada para textos generales (hojas, folletos, consentimientos).</p>
+          <p>Pega el texto, <b>sube un informe</b> (PDF, Word .docx, TXT o MD) o pulsa <b>Cargar ejemplo</b>. Al momento verás su puntuación en la escala INFLESZ, la de <b>cada apartado</b>, los párrafos más difíciles, <b>tu siguiente paso</b> y lo que conviene cambiar. Guarda las versiones en «Mis textos» y compáralas.</p>
+          <p><b>Privacidad</b>: los archivos se leen solo en tu navegador y tus textos se quedan en tu dispositivo; nada se envía a ningún servidor. Aun así, si el informe tiene <b>datos de pacientes</b>, pulsa «Nuevo» al terminar para borrar el borrador, y anonimízalo antes de guardarlo o compartir el informe de legibilidad (por ejemplo, con el <a href="https://cjgaland.github.io/anonimizador-rgpd-web/" target="_blank" rel="noopener">Anonimizador RGPD</a>).</p>
         </div>
         <label class="modal-check"><input type="checkbox" id="modal-no-repetir" /> <span>No mostrar este mensaje al iniciar</span></label>
       </div>
@@ -106,6 +106,7 @@
             <li>Índice de Flesch-Szigriszt: 206,835 − 62,3 × (sílabas ÷ palabras) − (palabras ÷ frases). Wu LL, et al. Transl Vis Sci Technol. 2026;15(2):14. doi: 10.1167/tvst.15.2.14.</li>
             <li>Escala INFLESZ y recomendación de superar 55 en textos de salud: Barrio-Cantalejo IM, Simón-Lorda P, Melguizo M, Escalona I, Marijuán MI, Hernando P. An Sist Sanit Navar. 2008;31(2):135-52. doi: 10.4321/s1137-66272008000300004.</li>
             <li>Información comprensible y consentimiento informado: Ley 41/2002, de 14 de noviembre, arts. 4.2, 8.2 y 10.1.</li>
+            <li><b>Informes en archivo</b>: lee PDF, Word (.docx), TXT y MD dentro del navegador, sin enviarlos a ningún sitio. Los títulos (estilos de Word, «#» de Markdown o letra más grande en PDF) marcan los apartados. Los PDF escaneados no tienen texto y no se pueden leer. Para los PDF usa <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noopener">pdf.js</a> de Mozilla (versión 6.4.299, licencia Apache 2.0), incluido en la app.</li>
             <li><b>Cómo cuenta la app</b>: frases terminadas en punto, interrogación, exclamación, punto y coma o salto de línea (cada elemento de una lista cuenta como frase); sílabas por reglas del castellano (diptongos, triptongos e hiatos con tilde); cada número cuenta como una palabra de dos sílabas. El resultado puede diferir algún punto del programa INFLESZ original.</li>
           </ul>
         </div>
@@ -134,10 +135,11 @@
 
   <input type="file" id="input-importar" accept=".json,application/json" hidden />
 
-  <script src="xlsx.js?v=2026.01"></script>
-  <script src="docx.js?v=2026.01"></script>
-  <script src="logic.js?v=2026.01"></script>
-  <script src="contenido.js?v=2026.01"></script>
-  <script src="app.js?v=2026.01"></script>
+  <script src="xlsx.js?v=2026.02"></script>
+  <script src="docx.js?v=2026.02"></script>
+  <script src="logic.js?v=2026.02"></script>
+  <script src="lector.js?v=2026.02"></script>
+  <script src="contenido.js?v=2026.02"></script>
+  <script src="app.js?v=2026.02"></script>
 </body>
 </html>

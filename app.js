@@ -28,9 +28,9 @@
   }
   const nombreArchivo = t => (t || "texto").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "texto";
   const fecha = iso => { try { return new Date(iso).toLocaleDateString("es-ES"); } catch (e) { return ""; } };
-  function confirmar(texto) {
+  function confirmar(texto, boton) {
     return new Promise(res => {
-      $("#conf-texto").textContent = texto; $("#modal-confirmar").hidden = false;
+      $("#conf-texto").textContent = texto; $("#conf-si").textContent = boton || "Sí, borrar"; $("#modal-confirmar").hidden = false;
       const fin = v => { $("#modal-confirmar").hidden = true; $("#conf-si").onclick = $("#conf-no").onclick = null; res(v); };
       $("#conf-si").onclick = () => fin(true); $("#conf-no").onclick = () => fin(false);
     });
@@ -77,15 +77,68 @@
     return h;
   }
 
+  const recorta = (t, n) => t.length > n ? t.slice(0, n).replace(/\s+\S*$/, "") + "…" : t;
+  const badge = a => `<span class="leg-badge leg-badge--${a.tramo ? a.tramo.color : "gris"}">${a.ifsz == null ? "—" : L.fmt(a.ifsz, 1)}${a.tramo ? " · " + esc(a.tramo.nombre) : ""}</span>`;
+
+  // Veredicto por apartados y párrafos más difíciles
+  function apartadosHTML(r) {
+    let h = "";
+    if (r.conTitulos) {
+      h += `<details class="card leg-diag leg-apartados" open><summary><b>Por apartados</b> <span class="chip chip--accent">${r.apartados.length}</span></summary><div class="leg-diag-body">
+        <table class="tabla-leg"><thead><tr><th>Apartado</th><th>Palabras</th><th>Legibilidad</th></tr></thead><tbody>
+        ${r.apartados.map(a => `<tr${r.peor === a ? ` class="leg-peor"` : ""}><td>${esc(a.titulo)}</td><td>${a.analisis.palabras}${a.analisis.corto ? `<span class="leg-n"> · orientativo</span>` : ""}</td><td>${badge(a.analisis)}</td></tr>`).join("")}
+        </tbody></table>
+        ${r.peor ? `<p class="note">El apartado más difícil es <b>«${esc(r.peor.titulo)}»</b>: empieza a retocar por ahí. Con menos de 100 palabras, la puntuación de un apartado es solo orientativa.</p>` : ""}
+      </div></details>`;
+    }
+    if (r.nParrafos > 1) {
+      h += `<details class="card leg-diag" ${r.dificiles.length ? "open" : ""}><summary><b>Párrafos más difíciles</b> <span class="chip ${r.dificiles.length ? "chip--accent" : ""}">${r.nDificiles}</span></summary><div class="leg-diag-body">
+        ${r.dificiles.length ? `<ol class="leg-lista leg-dificiles">${r.dificiles.map((d, i) => `<li>${badge(d.analisis)}${r.conTitulos ? ` <span class="leg-n">en «${esc(d.apartado)}»</span>` : ""} <span class="leg-n">· ${d.analisis.palabras} palabras</span>
+          <p class="leg-cita">${esc(recorta(d.texto, 320))}</p><button class="btn btn--ghost btn--sm" data-ver="${i}">Ver en el texto</button></li>`).join("")}</ol>
+          <p class="note">${r.nDificiles > r.dificiles.length ? `Se muestran los ${r.dificiles.length} peores de ${r.nDificiles} párrafos que no llegan a 55. ` : ""}Se puntúan solo los párrafos de ${L.PARRAFO_MIN} palabras o más.</p>`
+          : `<p>Ningún párrafo de ${L.PARRAFO_MIN} palabras o más se queda por debajo de 55. Bien.</p>`}
+      </div></details>`;
+    }
+    return h;
+  }
+
+  // ---------- Subir un informe (se lee solo en el navegador) ----------
+  async function cargarInforme(archivo) {
+    if (!archivo) return;
+    const estado = $("#subir-estado");
+    if (estado) { estado.className = "note"; estado.hidden = false; estado.textContent = `Leyendo «${archivo.name}»…`; }
+    try {
+      const r = await window.Lector.leerArchivo(archivo);
+      if (borrador.texto.trim() && !borrador.id && !(await confirmar("El texto que hay ahora en el editor no está guardado y se sustituirá por el del archivo.", "Sí, sustituir"))) { if (estado) estado.hidden = true; return; }
+      borrador ={ id: null, titulo: r.titulo, texto: r.texto, titulos: r.titulos };
+      guardarBorrador(); vistaAnalizar();
+      const ap = L.analizarApartados(r.texto, r.titulos);
+      const msg = `Leído «${archivo.name}»${r.paginas ? ` (${r.paginas} página${r.paginas > 1 ? "s" : ""})` : ""}: ${L.analizar(r.texto).palabras} palabras${ap.conTitulos ? ` en ${ap.apartados.length} apartados` : ""}.` +
+        (r.recortado ? " Es muy largo: se ha cargado solo el principio (unos 200.000 caracteres)." : "") + " Revisa abajo el texto extraído.";
+      const e2 = $("#subir-estado"); e2.className = r.recortado ? "warn" : "note"; e2.hidden = false; e2.textContent = msg;
+    } catch (err) {
+      const e2 = $("#subir-estado") || estado;
+      if (e2) { e2.className = "warn"; e2.hidden = false; e2.textContent = err && err.message ? err.message : "No se ha podido leer el archivo."; }
+    }
+  }
+
   // ---------- Vistas ----------
   function vistaAnalizar() {
     const v = $("#view");
     v.innerHTML = `
       <h1 class="page-title">Analizar un texto</h1>
-      <p class="page-lead">Pega una hoja informativa, unas recomendaciones al alta o un consentimiento. La puntuación se calcula al momento.</p>
+      <p class="page-lead">Pega o sube una hoja informativa, unas recomendaciones al alta, un consentimiento o un informe. La puntuación se calcula al momento, en total y por apartados.</p>
       <details class="card leg-facil"><summary><b>Explicado fácil</b></summary><div class="facil-body">${C.FACIL}</div></details>
       <div class="leg-grid">
-        <div class="card leg-editor">
+        <div class="card leg-editor" id="zona-subir">
+          <div class="leg-subir">
+            <button class="btn btn--primary" id="b-subir">Subir informe</button>
+            <span class="leg-subir-txt">o arrástralo aquí: PDF, Word (.docx), TXT o MD, hasta ${window.Lector.MAX_BYTES / 1048576} MB</span>
+          </div>
+          <p class="leg-privado"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2"/></svg>
+            <span>El archivo se lee <b>solo en tu navegador</b>: no se envía a ningún sitio. El texto se queda en este dispositivo como borrador; si tiene datos de pacientes, pulsa «Nuevo» al terminar para borrarlo.</span></p>
+          <p id="subir-estado" hidden></p>
+          <input type="file" id="input-informe" accept=".pdf,.docx,.txt,.md,.markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown" hidden />
           <label class="field-label" for="titulo">Título</label>
           <input id="titulo" class="leg-input" maxlength="120" placeholder="Por ejemplo: Hoja de alta tras traumatismo craneal" value="${esc(borrador.titulo)}" />
           <label class="field-label" for="texto">Texto</label>
@@ -103,12 +156,22 @@
         </div>
         <div class="leg-panel">
           <div id="resultado"></div>
+          <div id="apartados"></div>
           <div id="diagnostico"></div>
         </div>
       </div>`;
     const pintar = () => {
       const d = L.diagnostico(borrador.texto);
       $("#resultado").innerHTML = resultadoHTML(d.analisis);
+      const ap = L.analizarApartados(borrador.texto, borrador.titulos);
+      $("#apartados").innerHTML = apartadosHTML(ap);
+      $("#apartados").querySelectorAll("[data-ver]").forEach(b => b.onclick = () => {
+        const p = ap.dificiles[+b.dataset.ver].texto, ta = $("#texto"), i = ta.value.indexOf(p);
+        if (i < 0) return;
+        ta.focus(); ta.setSelectionRange(i, i + p.length);
+        ta.scrollTop = Math.max(0, ta.scrollHeight * (i / ta.value.length) - 60);
+        ta.scrollIntoView({ block: "center", behavior: "smooth" });
+      });
       $("#diagnostico").innerHTML = diagnosticoHTML(d);
     };
     let tmr = null;
@@ -118,14 +181,21 @@
       if (!borrador.texto.trim()) return toast("No hay texto que guardar.");
       const ahora = new Date().toISOString();
       const ex = borrador.id && datos.textos.find(t => t.id === borrador.id);
-      if (ex) { ex.titulo = borrador.titulo || "Sin título"; ex.texto = borrador.texto; ex.modificado = ahora; }
-      else { const t = L.nuevoTexto(borrador.titulo || "Sin título", borrador.texto); datos.textos.unshift(t); borrador.id = t.id; }
+      if (ex) { ex.titulo = borrador.titulo || "Sin título"; ex.texto = borrador.texto; ex.modificado = ahora; if (borrador.titulos) ex.titulos = borrador.titulos; }
+      else { const t = L.nuevoTexto(borrador.titulo || "Sin título", borrador.texto); if (borrador.titulos) t.titulos = borrador.titulos; datos.textos.unshift(t); borrador.id = t.id; }
       guardarDatos(); guardarBorrador(); toast("Guardado en Mis textos."); vistaAnalizar();
     };
     $("#b-nuevo").onclick = () => { borrador = { id: null, titulo: "", texto: "" }; guardarBorrador(); vistaAnalizar(); $("#texto").focus(); };
     $("#b-ejemplo").onclick = () => { const e = C.EJEMPLOS[0]; borrador = { id: null, titulo: e.titulo, texto: e.texto }; guardarBorrador(); vistaAnalizar(); toast("Ejemplo cargado: compáralo con la versión «después» en Comparar."); };
-    $("#b-pdf").onclick = () => informePDF(borrador.titulo, borrador.texto);
-    $("#b-word").onclick = () => informeWord(borrador.titulo, borrador.texto);
+    $("#b-pdf").onclick = () => informePDF(borrador.titulo, borrador.texto, borrador.titulos);
+    $("#b-word").onclick = () => informeWord(borrador.titulo, borrador.texto, borrador.titulos);
+    $("#b-subir").onclick = () => $("#input-informe").click();
+    $("#input-informe").onchange = e => { const f = e.target.files[0]; e.target.value = ""; cargarInforme(f); };
+    const zona = $("#zona-subir");
+    const conArchivos = e => e.dataTransfer && [...e.dataTransfer.types].includes("Files");
+    zona.addEventListener("dragover", e => { if (!conArchivos(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = "copy"; zona.classList.add("leg-soltar"); });
+    zona.addEventListener("dragleave", e => { if (!zona.contains(e.relatedTarget)) zona.classList.remove("leg-soltar"); });
+    zona.addEventListener("drop", e => { if (!conArchivos(e)) return; e.preventDefault(); zona.classList.remove("leg-soltar"); cargarInforme(e.dataTransfer.files[0]); });
     pintar();
   }
 
@@ -143,8 +213,8 @@
       ${viejo ? `<p class="warn">${datos.ultimaCopia ? "Hace más de un mes que no haces una copia de seguridad." : "Aún no has hecho ninguna copia de seguridad."} Si borras los datos del navegador, perderás tus textos.</p>` : ""}
       <div class="toolbar"><button class="btn btn--primary" id="b-copia">Descargar copia (.json)</button><button class="btn" id="b-importar">Importar copia</button></div>
       ${filas || `<div class="card"><p>Todavía no has guardado ningún texto. Analiza uno y pulsa «Guardar en Mis textos».</p></div>`}`;
-    v.querySelectorAll("[data-abrir]").forEach(b => b.onclick = () => { const t = datos.textos.find(x => x.id === b.dataset.abrir); borrador = { id: t.id, titulo: t.titulo, texto: t.texto }; guardarBorrador(); location.hash = "#/"; });
-    v.querySelectorAll("[data-dup]").forEach(b => b.onclick = () => { const t = datos.textos.find(x => x.id === b.dataset.dup); const n = L.nuevoTexto(t.titulo + " (copia)", t.texto); datos.textos.unshift(n); guardarDatos(); vistaTextos(); });
+    v.querySelectorAll("[data-abrir]").forEach(b => b.onclick = () => { const t = datos.textos.find(x => x.id === b.dataset.abrir); borrador = { id: t.id, titulo: t.titulo, texto: t.texto, titulos: t.titulos }; guardarBorrador(); location.hash = "#/"; });
+    v.querySelectorAll("[data-dup]").forEach(b => b.onclick = () => { const t = datos.textos.find(x => x.id === b.dataset.dup); const n = L.nuevoTexto(t.titulo + " (copia)", t.texto); if (t.titulos) n.titulos = t.titulos; datos.textos.unshift(n); guardarDatos(); vistaTextos(); });
     v.querySelectorAll("[data-borrar]").forEach(b => b.onclick = async () => {
       const t = datos.textos.find(x => x.id === b.dataset.borrar);
       if (!(await confirmar(`Se borrará «${t.titulo}» de este dispositivo. No se puede deshacer.`))) return;
@@ -234,15 +304,15 @@
       return "";
     }).join("");
   }
-  function informePDF(titulo, texto) {
+  function informePDF(titulo, texto, titulos) {
     if (!String(texto).trim()) return toast("No hay texto que analizar.");
-    $("#informe").innerHTML = bloquesHTML(L.documentoInforme(titulo, texto)) + `<p class="inf-pie">Generado con la app Legibilidad · https://cjgaland.github.io/legibilidad/</p>`;
+    $("#informe").innerHTML = bloquesHTML(L.documentoInforme(titulo, texto, null, titulos)) + `<p class="inf-pie">Generado con la app Legibilidad · https://cjgaland.github.io/legibilidad/</p>`;
     document.body.classList.add("imprimiendo");
     setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove("imprimiendo"), 500); }, 50);
   }
-  function informeWord(titulo, texto) {
+  function informeWord(titulo, texto, titulos) {
     if (!String(texto).trim()) return toast("No hay texto que analizar.");
-    const doc = L.documentoInforme(titulo, texto);
+    const doc = L.documentoInforme(titulo, texto, null, titulos);
     const bytes = window.Docx.construirDocx(Object.assign({ pie: "Informe de legibilidad · Generado con la app Legibilidad" }, doc));
     descargar(new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }), `legibilidad-${nombreArchivo(titulo)}.docx`);
   }
@@ -272,6 +342,8 @@
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", router);
+  // Un archivo soltado fuera de la zona no debe abrirse en la pestaña (y sacar al usuario de la app)
+  ["dragover", "drop"].forEach(ev => window.addEventListener(ev, e => { if (e.dataTransfer && [...e.dataTransfer.types].includes("Files")) e.preventDefault(); }));
 
   // ---------- Cabecera, modales y versión ----------
   $("#btn-tema").onclick = () => { const t = document.documentElement.getAttribute("data-tema") === "oscuro" ? "claro" : "oscuro"; document.documentElement.setAttribute("data-tema", t); escribe(TEMA, t); };

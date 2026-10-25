@@ -57,6 +57,18 @@ mark { background: #fde68a; color: #1f2937; border-radius: 3px; padding: 0 2px; 
 
 /* Informe impreso */
 .informe-impreso { display: none; }
+/* Subir informe (v2026.02) */
+.leg-subir { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px; border: 2px dashed var(--border-lite); border-radius: var(--radius); }
+.leg-subir-txt { font-size: 14px; color: var(--text-2); }
+.leg-soltar .leg-subir { border-color: var(--cyan); background: var(--cyan-dim); }
+.leg-privado { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0 4px; font-size: 13.5px; color: var(--text-2); }
+.leg-privado svg { flex: none; margin-top: 2px; color: var(--green); }
+.leg-apartados .tabla-leg td:nth-child(2) { white-space: nowrap; }
+.leg-apartados .leg-peor td { background: var(--amber-dim); }
+.leg-dificiles li { margin-top: 10px; }
+.leg-dificiles .leg-cita { margin: 4px 0; }
+.btn--sm { min-height: 32px; padding: 4px 10px; font-size: 13.5px; }
+@media (max-width: 520px) { .leg-subir .btn { width: 100%; } .tabla-leg { font-size: 13px; } .tabla-leg th, .tabla-leg td { padding: 5px 4px; } }
 @media print {
   body.imprimiendo > *:not(#informe) { display: none !important; }
   body.imprimiendo #informe { display: block; color: #000; font: 11pt/1.45 -apple-system, "Segoe UI", Arial, sans-serif; }

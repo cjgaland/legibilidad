@@ -14,10 +14,11 @@
 (function (raiz) {
   "use strict";
 
-  const VERSION = "2026.01";
+  const VERSION = "2026.02";
   const UMBRAL = 55;                 // recomendado para textos de salud
   const FRASE_LARGA = 20;            // palabras
   const PALABRA_LARGA = 5;           // sílabas
+  const PARRAFO_MIN = 15;            // palabras para puntuar un párrafo suelto
 
   const TRAMOS = [
     { id: "muy-dificil", hasta: 40, nombre: "Muy difícil", color: "rojo" },
@@ -167,6 +168,64 @@
 
   function fmt(n, d = 1) { return (Math.round(n * 10 ** d) / 10 ** d).toFixed(d).replace(".", ","); }
 
+  // ---------- Apartados ----------
+  // Un apartado empieza en cada título. Si el texto viene de un archivo, los
+  // títulos son los que marca el propio archivo (estilos de Word, «#» de MD,
+  // letra más grande en PDF). Si no, se reconocen por su forma: línea corta
+  // sin punto final seguida de texto que es una pregunta, va en mayúsculas,
+  // está numerada («2. Cuidados») o va separada por una línea en blanco.
+  const RE_NUMERADO = /^(\d+(\.\d+)*\.?|[IVX]+\.)\s+\S/;
+  const unaLinea = s => String(s).replace(/\s+/g, " ").trim();
+
+  function pareceTitulo(linea, tras, sigue) {
+    const l = unaLinea(linea);
+    if (!l || !sigue || /^[•·\-–—*]/.test(l) || /[.,;:]$/.test(l)) return false;
+    const n = palabras(l).length;
+    if (n < 1 || n > 12) return false;
+    const letras = l.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, "");
+    if (letras.length >= 3 && letras === letras.toUpperCase()) return true;
+    if (/\?$/.test(l) || RE_NUMERADO.test(l)) return true;
+    return tras && /^[¿¡A-ZÁÉÍÓÚÑ0-9]/.test(l);
+  }
+
+  function apartados(texto, titulos) {
+    const ls = normalizar(texto).split("\n");
+    const conocidos = new Set((Array.isArray(titulos) ? titulos : []).map(unaLinea).filter(Boolean));
+    const usar = conocidos.size && ls.some(l => conocidos.has(unaLinea(l)));
+    const out = [];
+    let actual = { titulo: null, parrafos: [] };
+    ls.forEach((l, i) => {
+      const t = unaLinea(l);
+      if (!t) return;
+      const tras = i === 0 || !ls[i - 1].trim();
+      const sigue = ls.slice(i + 1).some(x => x.trim());
+      if (usar ? conocidos.has(t) : pareceTitulo(t, tras, sigue)) {
+        if (actual.parrafos.length) out.push(actual);
+        actual = { titulo: t, parrafos: [] };
+      } else actual.parrafos.push(t);
+    });
+    if (actual.parrafos.length) out.push(actual);
+    if (out.length && !out[0].titulo) out[0].titulo = out.length > 1 ? "Inicio (antes del primer título)" : "Todo el texto";
+    return out;
+  }
+
+  // Legibilidad de cada apartado y de los párrafos más difíciles
+  function analizarApartados(texto, titulos) {
+    const aps = apartados(texto, titulos).map(a => ({ titulo: a.titulo, parrafos: a.parrafos, analisis: analizar(a.parrafos.join("\n")) }));
+    const dificiles = [];
+    let nParrafos = 0;
+    for (const a of aps) for (const p of a.parrafos) {
+      const an = analizar(p);
+      if (an.palabras < PARRAFO_MIN) continue;
+      nParrafos++;
+      if (!an.supera) dificiles.push({ apartado: a.titulo, texto: p, analisis: an });
+    }
+    dificiles.sort((x, y) => x.analisis.ifsz - y.analisis.ifsz);
+    const conNota = aps.filter(a => a.analisis.ifsz != null);
+    const peor = conNota.length > 1 ? conNota.reduce((m, a) => a.analisis.ifsz < m.analisis.ifsz ? a : m) : null;
+    return { apartados: aps, conTitulos: aps.length > 1, peor, dificiles: dificiles.slice(0, 5), nDificiles: dificiles.length, nParrafos };
+  }
+
   // ---------- Textos guardados ----------
   function nuevoTexto(titulo, texto) {
     const ahora = new Date().toISOString();
@@ -184,6 +243,7 @@
         id: typeof t.id === "string" ? t.id : nuevoTexto().id,
         titulo: String(t.titulo || "Sin título").slice(0, 120),
         texto: t.texto.slice(0, 200000),
+        ...(Array.isArray(t.titulos) ? { titulos: t.titulos.filter(x => typeof x === "string").slice(0, 500) } : {}),
         creado: typeof t.creado === "string" ? t.creado : new Date().toISOString(),
         modificado: typeof t.modificado === "string" ? t.modificado : new Date().toISOString()
       });
@@ -199,7 +259,7 @@
   }
 
   // ---------- Documento (bloques para docx.js y para el informe) ----------
-  function documentoInforme(titulo, texto, fecha) {
+  function documentoInforme(titulo, texto, fecha, titulos) {
     const d = diagnostico(texto), a = d.analisis;
     const b = [];
     b.push({ t: "portada", titulo: "Informe de legibilidad", sub: titulo || "Texto sin título", extra: [`Fecha: ${fecha || new Date().toLocaleDateString("es-ES")}`, "Escala INFLESZ · Índice de Flesch-Szigriszt"] });
@@ -212,6 +272,16 @@
       ["Sílabas por palabra", fmt(a.silPorPal, 2)], ["Palabras por frase", fmt(a.palPorFrase, 1)]
     ] });
     if (a.corto) b.push({ t: "p", estilo: "nota", texto: "Texto de menos de 100 palabras: la puntuación es solo orientativa." });
+    const ap = analizarApartados(texto, titulos);
+    if (ap.conTitulos) {
+      b.push({ t: "h1", texto: "Por apartados" });
+      b.push({ t: "tabla", cab: ["Apartado", "Palabras", "Índice", "Grado"], anchos: [5, 2, 2, 3], filas: ap.apartados.map(x => [x.titulo, String(x.analisis.palabras), x.analisis.ifsz == null ? "—" : fmt(x.analisis.ifsz, 1), x.analisis.tramo ? x.analisis.tramo.nombre : "—"]) });
+      if (ap.peor) b.push({ t: "p", texto: `El apartado más difícil es «${ap.peor.titulo}». Los apartados de menos de 100 palabras dan una puntuación solo orientativa.` });
+    }
+    if (ap.dificiles.length) {
+      b.push({ t: "h1", texto: "Párrafos más difíciles" });
+      b.push({ t: "lista", items: ap.dificiles.map(x => `${fmt(x.analisis.ifsz, 1)} (${x.analisis.tramo.nombre})${ap.conTitulos ? ` · ${x.apartado}` : ""}: ${x.texto}`) });
+    }
     b.push({ t: "h1", texto: "Qué mejorar" });
     const sp = siguientePaso(d);
     b.push({ t: "p", runs: [{ texto: "Tu siguiente paso. ", negrita: true }, { texto: sp.texto }] });
@@ -226,6 +296,6 @@
     return { titulo: "Informe de legibilidad", bloques: b };
   }
 
-  const API = { VERSION, UMBRAL, FRASE_LARGA, PALABRA_LARGA, TRAMOS, silabas, frases, palabras, indice, tramo, analizar, tecnicismos, siglas, diagnostico, siguientePaso, fmt, nuevoTexto, sanear, fusionar, documentoInforme };
+  const API = { VERSION, UMBRAL, FRASE_LARGA, PALABRA_LARGA, PARRAFO_MIN, TRAMOS, silabas, frases, palabras, indice, tramo, analizar, pareceTitulo, apartados, analizarApartados, tecnicismos, siglas, diagnostico, siguientePaso, fmt, nuevoTexto, sanear, fusionar, documentoInforme };
   if (typeof module !== "undefined" && module.exports) module.exports = API; else raiz.Logica = API;
 })(typeof window !== "undefined" ? window : globalThis);

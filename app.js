@@ -22,6 +22,11 @@
     const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
     setTimeout(() => t.remove(), 3200);
   }
+  function toastAccion(msg, etiqueta, fn) {
+    const t = document.createElement("div"); t.className = "toast toast--accion"; t.textContent = msg + " ";
+    const b = document.createElement("button"); b.className = "btn btn--sm"; b.textContent = etiqueta; b.onclick = () => { t.remove(); fn(); };
+    t.appendChild(b); document.body.appendChild(t); setTimeout(() => t.remove(), 9000);
+  }
   function descargar(blob, nombre) {
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre;
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
@@ -70,7 +75,7 @@
     if (!d.analisis.palabras) return h;
     const sec = (titulo, cuerpo, n) => `<details class="card leg-diag" ${n ? "open" : ""}><summary><b>${titulo}</b> <span class="chip ${n ? "chip--accent" : ""}">${n}</span></summary><div class="leg-diag-body">${cuerpo}</div></details>`;
     h += sec(`Frases de más de ${L.FRASE_LARGA} palabras`, d.frasesLargas.length ? `<ol class="leg-lista">${d.frasesLargas.map(f => `<li><mark>${esc(f.texto)}</mark> <span class="leg-n">${f.palabras} palabras</span></li>`).join("")}</ol><p class="note">Pártelas en dos o tres frases. Una idea por frase.</p>` : `<p>Ninguna. Bien.</p>`, d.frasesLargas.length);
-    h += sec("Términos técnicos", d.tecnicismos.length ? `<table class="tabla-leg"><thead><tr><th>En lugar de…</th><th>Prueba con…</th></tr></thead><tbody>${d.tecnicismos.map(t => `<tr><td>${esc(t.termino)}</td><td>${esc(t.alternativa)}</td></tr>`).join("")}</tbody></table>` : `<p>No se han encontrado tecnicismos de la lista. Revisa tú los propios de tu especialidad.</p>`, d.tecnicismos.length);
+    h += sec("Términos técnicos", d.tecnicismos.length ? `<table class="tabla-leg"><thead><tr><th>En lugar de…</th><th>Prueba con…</th><th></th></tr></thead><tbody>${d.tecnicismos.map(t => `<tr><td>${esc(t.termino)}</td><td>${esc(t.alternativa)}</td><td>${/[()]/.test(t.alternativa) ? "" : `<button class="btn btn--sm" data-cambiar data-termino="${esc(t.termino)}" data-alt="${esc(t.alternativa)}" title="Cambiar en todo el texto">Cambiar</button>`}</td></tr>`).join("")}</tbody></table><p class="note">«Cambiar» pone la alternativa en todo el texto. Revisa después cómo queda cada frase (por ejemplo, «la ingesta» → «lo que come o bebe»).</p>` : `<p>No se han encontrado tecnicismos de la lista. Revisa tú los propios de tu especialidad.</p>`, d.tecnicismos.length);
     h += sec("Siglas", d.siglas.length ? `<p>${d.siglas.map(esc).join(", ")}</p><p class="note">Quítalas o explícalas la primera vez que aparezcan.</p>` : `<p>Ninguna.</p>`, d.siglas.length);
     h += sec(`Palabras de ${L.PALABRA_LARGA} sílabas o más`, d.palabrasLargas.length ? `<p>${d.palabrasLargas.map(p => esc(p.palabra)).join(", ")}</p><p class="note">No todas sobran, pero cada una baja la puntuación. ¿Hay otra más corta?</p>` : `<p>Ninguna.</p>`, d.palabrasLargas.length);
     h += sec("Construcciones impersonales", d.pasivas.length ? `<p>${d.pasivas.map(esc).join(", ")}</p><p class="note">Mejor en activo y dirigido al lector: «le haremos», «tome», «vuelva».</p>` : `<p>Ninguna.</p>`, d.pasivas.length);
@@ -94,7 +99,9 @@
     if (r.nParrafos > 1) {
       h += `<details class="card leg-diag" ${r.dificiles.length ? "open" : ""}><summary><b>Párrafos más difíciles</b> <span class="chip ${r.dificiles.length ? "chip--accent" : ""}">${r.nDificiles}</span></summary><div class="leg-diag-body">
         ${r.dificiles.length ? `<ol class="leg-lista leg-dificiles">${r.dificiles.map((d, i) => `<li>${badge(d.analisis)}${r.conTitulos ? ` <span class="leg-n">en «${esc(d.apartado)}»</span>` : ""} <span class="leg-n">· ${d.analisis.palabras} palabras</span>
-          <p class="leg-cita">${esc(recorta(d.texto, 320))}</p><button class="btn btn--ghost btn--sm" data-ver="${i}">Ver en el texto</button></li>`).join("")}</ol>
+          <p class="leg-cita">${esc(recorta(d.texto, 320))}</p>
+          <div class="leg-consejos"><b>Qué cambiar</b><ul>${d.consejos.map(c => `<li>${esc(c.texto)}${c.cambiable ? ` <button class="btn btn--sm" data-cambiar data-parrafo="${i}" data-termino="${esc(c.termino)}" data-alt="${esc(c.alternativa)}">Cambiar</button>` : ""}</li>`).join("")}</ul></div>
+          <button class="btn btn--ghost btn--sm" data-ver="${i}">Ver en el texto</button></li>`).join("")}</ol>
           <p class="note">${r.nDificiles > r.dificiles.length ? `Se muestran los ${r.dificiles.length} peores de ${r.nDificiles} párrafos que no llegan a 55. ` : ""}Se puntúan solo los párrafos de ${L.PARRAFO_MIN} palabras o más.</p>`
           : `<p>Ningún párrafo de ${L.PARRAFO_MIN} palabras o más se queda por debajo de 55. Bien.</p>`}
       </div></details>`;
@@ -173,6 +180,23 @@
         ta.scrollIntoView({ block: "center", behavior: "smooth" });
       });
       $("#diagnostico").innerHTML = diagnosticoHTML(d);
+      document.querySelectorAll("#apartados [data-cambiar], #diagnostico [data-cambiar]").forEach(b => b.onclick = () =>
+        cambiar(b.dataset.termino, b.dataset.alt, b.dataset.parrafo != null ? ap.dificiles[+b.dataset.parrafo].texto : null));
+    };
+    // Pone la alternativa de un tecnicismo en un párrafo o en todo el texto, con «Deshacer»
+    const ponerTexto = t => { borrador.texto = t; const ta = $("#texto"); if (ta) { ta.value = t; pintar(); } guardarBorrador(); };
+    const cambiar = (termino, alt, parrafo) => {
+      const antes = borrador.texto;
+      let r;
+      if (parrafo != null) {
+        const i = antes.indexOf(parrafo);
+        if (i < 0) return toast("No encuentro ese párrafo en el texto.");
+        const rp = L.reemplazarTermino(parrafo, termino, alt);
+        r = { texto: antes.slice(0, i) + rp.texto + antes.slice(i + parrafo.length), n: rp.n };
+      } else r = L.reemplazarTermino(antes, termino, alt);
+      if (!r.n) return toast(`No encuentro «${termino}» en el texto.`);
+      ponerTexto(r.texto);
+      toastAccion(`Cambiado «${termino}» por «${alt}»${r.n > 1 ? ` (${r.n} veces)` : ""}. Revisa cómo queda la frase.`, "Deshacer", () => ponerTexto(antes));
     };
     let tmr = null;
     $("#texto").addEventListener("input", e => { borrador.texto = e.target.value; clearTimeout(tmr); tmr = setTimeout(() => { pintar(); guardarBorrador(); }, 250); });

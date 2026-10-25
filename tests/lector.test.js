@@ -119,6 +119,23 @@ const TITULO = "Cuidados de la herida después de la operación";
   const ej = require("../contenido.js").EJEMPLOS[1];
   prueba("ejemplo «después»: dos apartados con preguntas", L.analizarApartados(ej.texto).apartados.length === 2);
 
+  // ---- Consejos y «Cambiar» ----
+  const dif = r.dificiles[0];
+  prueba("consejos: el párrafo difícil trae consejos", Array.isArray(dif.consejos) && dif.consejos.length >= 2);
+  prueba("consejos: frase larga", dif.consejos.some(c => c.tipo === "frase" && /46 palabras/.test(c.texto)), dif.consejos);
+  prueba("consejos: tecnicismo con alternativa y botón", dif.consejos.some(c => c.tipo === "tecnicismo" && c.termino === "deambulación" && c.alternativa === "caminar" && c.cambiable));
+  prueba("consejos: impersonal", dif.consejos.some(c => c.tipo === "impersonal" && /se procederá/.test(c.texto)));
+  prueba("consejos: varias frases largas en un solo consejo", L.consejosParrafo("Esta es una frase muy larga que tiene más de veinte palabras para que la app la marque como frase larga sin ninguna duda. Y esta es otra frase igual de larga que también tiene más de veinte palabras contadas una a una.").filter(c => c.tipo === "frase").length === 1);
+  prueba("consejos: alternativa con paréntesis no se cambia sola", L.consejosParrafo("No hay focalidad.").find(c => c.termino === "focalidad").cambiable === false);
+  prueba("consejos: siempre hay al menos uno", L.consejosParrafo("Bien.").length === 1);
+  const rt = L.reemplazarTermino("La Deambulación y la deambulacion. Deambular no.", "deambulación", "caminar");
+  prueba("cambiar: sin tildes ni mayúsculas, respeta la mayúscula inicial", rt.n === 2 && rt.texto === "La Caminar y la caminar. Deambular no.", rt);
+  const rv = L.reemplazarTermino("Por vía  oral. Vía oral.", "vía oral", "por la boca");
+  prueba("cambiar: términos de dos palabras", rv.n === 2 && rv.texto === "Por por la boca. Por la boca.", rv);
+  prueba("cambiar: no toca palabras que solo lo contienen", L.reemplazarTermino("edemas edema", "edema", "hinchazón").texto === "edemas hinchazón");
+  const inf2 = L.documentoInforme("Ejemplo", docx.texto, "25/10/2026", docx.titulos);
+  prueba("informe: incluye «Qué cambiar» en los párrafos difíciles", inf2.bloques.some(b => b.t === "lista" && b.items.some(i => i.includes("Qué cambiar:"))));
+
   // ---- Informe con apartados y textos guardados con títulos ----
   const inf = L.documentoInforme("Ejemplo", docx.texto, "25/10/2026", docx.titulos);
   prueba("informe: incluye «Por apartados»", inf.bloques.some(b => b.t === "h1" && b.texto === "Por apartados"));

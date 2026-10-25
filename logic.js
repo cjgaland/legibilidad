@@ -223,7 +223,37 @@
     dificiles.sort((x, y) => x.analisis.ifsz - y.analisis.ifsz);
     const conNota = aps.filter(a => a.analisis.ifsz != null);
     const peor = conNota.length > 1 ? conNota.reduce((m, a) => a.analisis.ifsz < m.analisis.ifsz ? a : m) : null;
-    return { apartados: aps, conTitulos: aps.length > 1, peor, dificiles: dificiles.slice(0, 5), nDificiles: dificiles.length, nParrafos };
+    return { apartados: aps, conTitulos: aps.length > 1, peor, dificiles: dificiles.slice(0, 5).map(x => Object.assign(x, { consejos: consejosParrafo(x.texto) })), nDificiles: dificiles.length, nParrafos };
+  }
+
+  // ---------- Consejos para un párrafo difícil ----------
+  // Qué lo hace difícil y cómo arreglarlo. La app no reescribe el texto:
+  // solo puede poner la alternativa de un tecnicismo (con «Cambiar»).
+  function consejosParrafo(texto) {
+    const d = diagnostico(texto), out = [];
+    const fl = d.frasesLargas.map(f => f.palabras);
+    if (fl.length === 1) out.push({ tipo: "frase", texto: `Tiene una frase de ${fl[0]} palabras. Pártela en dos o tres: una idea por frase.` });
+    else if (fl.length) out.push({ tipo: "frase", texto: `Tiene ${fl.length} frases de más de ${FRASE_LARGA} palabras (${fl.slice(0, -1).join(", ")} y ${fl[fl.length - 1]}). Pártelas: una idea por frase.` });
+    for (const t of d.tecnicismos) out.push({ tipo: "tecnicismo", termino: t.termino, alternativa: t.alternativa, cambiable: !/[()]/.test(t.alternativa), texto: `«${t.termino}»: prueba con «${t.alternativa}».` });
+    if (d.pasivas.length) out.push({ tipo: "impersonal", texto: `${d.pasivas.map(p => "«" + p + "»").join(", ")}: dilo en activo y dirigido al lector («le haremos», «tome», «vuelva»).` });
+    if (d.siglas.length) out.push({ tipo: "siglas", texto: `Siglas (${d.siglas.join(", ")}): quítalas o explícalas la primera vez.` });
+    const largas = d.palabrasLargas.filter(p => !d.tecnicismos.some(t => sinTildes(t.termino) === sinTildes(p.palabra)));
+    if (largas.length) out.push({ tipo: "palabras", texto: `Palabras largas: ${largas.slice(0, 6).map(p => p.palabra).join(", ")}. ¿Hay otras más cortas y de todos los días?` });
+    if (!out.length) out.push({ tipo: "general", texto: d.analisis.palPorFrase > 15 ? `Las frases tienen de media ${fmt(d.analisis.palPorFrase, 1)} palabras: acórtalas.` : "Usa palabras más cortas y de todos los días." });
+    return out;
+  }
+
+  // Cambia un término por su alternativa, sin distinguir tildes ni mayúsculas
+  // (y respetando la mayúscula inicial). Devuelve el texto nuevo y cuántas veces.
+  const VARIANTES = { a: "aá", e: "eé", i: "ií", o: "oó", u: "uúü" };
+  function patronTermino(termino) {
+    const cuerpo = [...sinTildes(termino)].map(c => VARIANTES[c] ? `[${VARIANTES[c]}]` : c === " " ? "\\s+" : c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("");
+    return new RegExp(`(?<![\\p{L}\\p{N}])${cuerpo}(?![\\p{L}\\p{N}])`, "giu");
+  }
+  function reemplazarTermino(texto, termino, alternativa) {
+    let n = 0;
+    const t = String(texto || "").replace(patronTermino(termino), m => { n++; return /^\p{Lu}/u.test(m) ? alternativa[0].toUpperCase() + alternativa.slice(1) : alternativa; });
+    return { texto: t, n };
   }
 
   // ---------- Textos guardados ----------
@@ -280,7 +310,7 @@
     }
     if (ap.dificiles.length) {
       b.push({ t: "h1", texto: "Párrafos más difíciles" });
-      b.push({ t: "lista", items: ap.dificiles.map(x => `${fmt(x.analisis.ifsz, 1)} (${x.analisis.tramo.nombre})${ap.conTitulos ? ` · ${x.apartado}` : ""}: ${x.texto}`) });
+      b.push({ t: "lista", items: ap.dificiles.map(x => `${fmt(x.analisis.ifsz, 1)} (${x.analisis.tramo.nombre})${ap.conTitulos ? ` · ${x.apartado}` : ""}: ${x.texto} Qué cambiar: ${x.consejos.map(c => c.texto).join(" ")}`) });
     }
     b.push({ t: "h1", texto: "Qué mejorar" });
     const sp = siguientePaso(d);
@@ -296,6 +326,6 @@
     return { titulo: "Informe de legibilidad", bloques: b };
   }
 
-  const API = { VERSION, UMBRAL, FRASE_LARGA, PALABRA_LARGA, PARRAFO_MIN, TRAMOS, silabas, frases, palabras, indice, tramo, analizar, pareceTitulo, apartados, analizarApartados, tecnicismos, siglas, diagnostico, siguientePaso, fmt, nuevoTexto, sanear, fusionar, documentoInforme };
+  const API = { VERSION, UMBRAL, FRASE_LARGA, PALABRA_LARGA, PARRAFO_MIN, TRAMOS, silabas, frases, palabras, indice, tramo, analizar, pareceTitulo, apartados, analizarApartados, consejosParrafo, reemplazarTermino, tecnicismos, siglas, diagnostico, siguientePaso, fmt, nuevoTexto, sanear, fusionar, documentoInforme };
   if (typeof module !== "undefined" && module.exports) module.exports = API; else raiz.Logica = API;
 })(typeof window !== "undefined" ? window : globalThis);

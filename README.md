@@ -5,7 +5,7 @@ Aplicación web (PWA) estática, sin dependencias y utilizable sin conexión, pa
 - **Índice de Flesch-Szigriszt** y grado en la **escala INFLESZ** (más de 55, recomendado en textos de salud), con escala visual.
 - **Tu siguiente paso** y diagnóstico: frases de más de 20 palabras, términos técnicos con alternativa, siglas, palabras largas y construcciones impersonales.
 - **Subir informe** en PDF, Word (.docx), TXT o MD, con botón o arrastrando el archivo. Se lee **solo en el navegador**: nunca se envía a ningún sitio. Los PDF escaneados (sin texto) no se pueden leer.
-- **Veredicto por apartados**: legibilidad de cada título o apartado y los párrafos más difíciles, para saber dónde retocar.
+- **Veredicto por apartados**: legibilidad de cada título o apartado y los párrafos más difíciles, para saber dónde retocar, con qué cambiar en cada uno (y botón «Cambiar» para poner la alternativa de un tecnicismo).
 - **Mis textos** (guardados solo en el dispositivo, con copia `.json`) y **Comparar** el antes y el después.
 - Informe en **PDF** y **Word**. «Explicado fácil», Aprende, Ponte a prueba, glosario y el ejemplo de la hoja de alta del traumatismo craneal leve.
 

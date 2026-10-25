@@ -67,6 +67,11 @@ mark { background: #fde68a; color: #1f2937; border-radius: 3px; padding: 0 2px; 
 .leg-apartados .leg-peor td { background: var(--amber-dim); }
 .leg-dificiles li { margin-top: 10px; }
 .leg-dificiles .leg-cita { margin: 4px 0; }
+.leg-consejos { margin: 6px 0 8px; padding: 8px 10px; border-radius: var(--radius); background: var(--bg-3); font-size: 14px; }
+.leg-consejos ul { margin: 4px 0 0; padding-left: 18px; } .leg-consejos li + li { margin-top: 4px; }
+.leg-consejos .btn--sm, .tabla-leg .btn--sm { margin-left: 4px; }
+.toast--accion { display: flex; align-items: center; gap: 10px; text-align: left; }
+.toast--accion .btn { flex: none; color: #fff; border-color: rgba(255,255,255,.5); background: transparent; }
 .btn--sm { min-height: 32px; padding: 4px 10px; font-size: 13.5px; }
 @media (max-width: 520px) { .leg-subir .btn { width: 100%; } .tabla-leg { font-size: 13px; } .tabla-leg th, .tabla-leg td { padding: 5px 4px; } }
 @media print {

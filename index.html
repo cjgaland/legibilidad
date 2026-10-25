@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d1b2a" id="meta-theme-color" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Legibilidad" />
+  <meta name="description" content="Mide la legibilidad de los textos para pacientes con el índice de Flesch-Szigriszt y la escala INFLESZ, y te dice qué cambiar" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=1" />
+  <link rel="apple-touch-icon" href="icon-180.png?v=1" />
+  <title>Legibilidad · Textos claros para pacientes</title>
+  <script>
+    (function () {
+      var t = null; try { t = localStorage.getItem("legibilidad-tema"); } catch (e) {}
+      if (!t) t = (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) ? "oscuro" : "claro";
+      document.documentElement.setAttribute("data-tema", t);
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css?v=2026.01" />
+  <link rel="stylesheet" href="legibilidad.css?v=2026.01" />
+</head>
+<body>
+
+  <header class="app-header">
+    <a class="header-brand" href="#/" aria-label="Inicio">
+      <span class="header-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 11h11M4 16h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="17.5" cy="16.5" r="3.2" stroke="currentColor" stroke-width="2"/><path d="M20 19l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </span>
+      <span>
+        <span class="header-title">Legibilidad</span>
+        <span class="header-subtitle">Textos claros para pacientes · INFLESZ</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <button class="icon-btn" id="btn-tema" aria-label="Cambiar entre modo claro y oscuro" title="Modo claro / oscuro">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-acerca" aria-label="Acerca de" title="Acerca de">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav class="calc-nav" id="nav" aria-label="Secciones">
+    <a href="#/" data-r="">Analizar</a>
+    <a href="#/textos" data-r="textos">Mis textos</a>
+    <a href="#/comparar" data-r="comparar">Comparar</a>
+    <a href="#/aprende" data-r="aprende">Aprende</a>
+    <a href="#/prueba" data-r="prueba">Ponte a prueba</a>
+    <a href="#/glosario" data-r="glosario">Glosario</a>
+  </nav>
+
+  <main id="view" class="view" tabindex="-1"></main>
+
+  <section id="informe" class="informe-impreso" aria-hidden="true"></section>
+
+  <footer class="app-footer">
+    <span class="autor-titulo">Aplicación desarrollada por</span>
+    <span class="autor"><b>Carlos J. Galán Doval</b> · Médico de Familia · Técnico en Calidad y Seguridad del Paciente</span>
+    <span class="autor"><b>Rafael J. Romero de Castilla Gil</b> · Médico de Familia · Responsable del Área de Calidad y Seguridad del Paciente</span>
+    <span class="autor-area">Área de Gestión Sanitaria Sur de Córdoba · Andalucía</span>
+    <span class="autor-uso">De libre uso con fines docentes y divulgativos. No sustituye el criterio profesional.</span>
+    <span class="footer-version" id="footer-version"></span>
+  </footer>
+
+  <!-- MODAL BIENVENIDA -->
+  <div class="modal-overlay" id="modal-bienvenida" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bienv-titulo">
+      <div class="modal-header">
+        <h2 id="bienv-titulo">Bienvenido a Legibilidad</h2>
+        <p class="modal-sub">Para que tus hojas informativas y consentimientos se entiendan a la primera</p>
+      </div>
+      <div class="modal-body">
+        <div class="modal-bloque modal-bloque--aviso">
+          <strong>Aviso importante</strong>
+          <p>Es una <b>herramienta docente y de apoyo</b>. La puntuación es una <b>aproximación</b>: cuenta palabras, frases y sílabas, pero no sabe si el texto es correcto, completo o fácil de entender. <b>No sustituye</b> a probar el texto con pacientes ni al criterio profesional.</p>
+        </div>
+        <div class="modal-bloque">
+          <strong>Cómo se usa</strong>
+          <p>Pega el texto (o pulsa <b>Cargar ejemplo</b>). Al momento verás su puntuación en la escala INFLESZ, <b>tu siguiente paso</b> y lo que conviene cambiar. Guarda las versiones en «Mis textos» y compáralas. Tus textos se quedan en tu dispositivo: no se envían a ningún servidor.</p>
+          <p><b>No pegues datos de pacientes</b>: la app está pensada para textos generales (hojas, folletos, consentimientos).</p>
+        </div>
+        <label class="modal-check"><input type="checkbox" id="modal-no-repetir" /> <span>No mostrar este mensaje al iniciar</span></label>
+      </div>
+      <div class="modal-footer"><button class="btn btn--primary" id="btn-bienv-ok">He leído y entiendo</button></div>
+    </div>
+  </div>
+
+  <!-- MODAL ACERCA DE -->
+  <div class="modal-overlay" id="modal-acerca" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="acerca-titulo">
+      <div class="modal-header">
+        <h2 id="acerca-titulo">Acerca de Legibilidad</h2>
+        <button class="icon-btn modal-close" id="btn-acerca-cerrar" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>Aplicación web (PWA) estática, sin dependencias externas y utilizable sin conexión, para medir la legibilidad de los textos dirigidos a pacientes y mejorarlos. Acompaña al capítulo 24, «Escribir claro para pacientes», de la <i>Guía de Calidad y Seguridad del Paciente</i>.</p>
+        <div class="modal-bloque">
+          <strong>Fórmula, escala y fuentes</strong>
+          <ul>
+            <li>Índice de Flesch-Szigriszt: 206,835 − 62,3 × (sílabas ÷ palabras) − (palabras ÷ frases). Wu LL, et al. Transl Vis Sci Technol. 2026;15(2):14. doi: 10.1167/tvst.15.2.14.</li>
+            <li>Escala INFLESZ y recomendación de superar 55 en textos de salud: Barrio-Cantalejo IM, Simón-Lorda P, Melguizo M, Escalona I, Marijuán MI, Hernando P. An Sist Sanit Navar. 2008;31(2):135-52. doi: 10.4321/s1137-66272008000300004.</li>
+            <li>Información comprensible y consentimiento informado: Ley 41/2002, de 14 de noviembre, arts. 4.2, 8.2 y 10.1.</li>
+            <li><b>Cómo cuenta la app</b>: frases terminadas en punto, interrogación, exclamación, punto y coma o salto de línea (cada elemento de una lista cuenta como frase); sílabas por reglas del castellano (diptongos, triptongos e hiatos con tilde); cada número cuenta como una palabra de dos sílabas. El resultado puede diferir algún punto del programa INFLESZ original.</li>
+          </ul>
+        </div>
+        <div class="modal-bloque">
+          <strong>Apps hermanas</strong>
+          <p>Forma parte del ecosistema de apps de calidad y seguridad del paciente de los autores: <a href="https://cjgaland.github.io/dafo/" target="_blank" rel="noopener">DAFO · CAME</a>, <a href="https://cjgaland.github.io/flujograma/" target="_blank" rel="noopener">Flujograma</a>, <a href="https://cjgaland.github.io/amfe/" target="_blank" rel="noopener">AMFE</a>, <a href="https://cjgaland.github.io/mapa-riesgos/" target="_blank" rel="noopener">Mapa de Riesgos</a>, <a href="https://cjgaland.github.io/indicadores-calidad/" target="_blank" rel="noopener">Indicadores</a>, <a href="https://cjgaland.github.io/tamano-muestral/" target="_blank" rel="noopener">Tamaño Muestral</a>, <a href="https://cjgaland.github.io/auditorias/" target="_blank" rel="noopener">Auditorías</a> y <a href="https://cjgaland.github.io/rondas-seguridad/" target="_blank" rel="noopener">Rondas de Seguridad</a>.</p>
+          <p><b>Herramientas de apoyo</b>: <a href="https://cjgaland.github.io/anonimizador-rgpd-web/" target="_blank" rel="noopener">Anonimizador RGPD</a> y <a href="https://cjgaland.github.io/normalizador-bibliografico/" target="_blank" rel="noopener">Normalizador Bibliográfico</a>.</p>
+        </div>
+        <div class="modal-bloque">
+          <strong>Instalar en el móvil</strong>
+          <p>En iPhone, con Safari: Compartir → «Añadir a pantalla de inicio». En Android, con Chrome: menú → «Instalar aplicación».</p>
+        </div>
+        <div class="modal-bloque" id="acerca-novedades"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRMAR -->
+  <div class="modal-overlay" id="modal-confirmar" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="conf-titulo">
+      <div class="modal-header"><h2 id="conf-titulo">¿Seguro?</h2></div>
+      <div class="modal-body"><p id="conf-texto"></p></div>
+      <div class="modal-footer"><button class="btn" id="conf-no">Cancelar</button> <button class="btn btn--primary" id="conf-si">Sí, borrar</button></div>
+    </div>
+  </div>
+
+  <input type="file" id="input-importar" accept=".json,application/json" hidden />
+
+  <script src="xlsx.js?v=2026.01"></script>
+  <script src="docx.js?v=2026.01"></script>
+  <script src="logic.js?v=2026.01"></script>
+  <script src="contenido.js?v=2026.01"></script>
+  <script src="app.js?v=2026.01"></script>
+</body>
+</html>

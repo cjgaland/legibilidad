@@ -83,7 +83,7 @@
         <div class="modal-bloque">
           <strong>Cómo se usa</strong>
           <p>Pega el texto, <b>sube un informe</b> (PDF, Word .docx, TXT o MD) o pulsa <b>Cargar ejemplo</b>. Al momento verás su puntuación en la escala INFLESZ, la de <b>cada apartado</b>, los párrafos más difíciles, <b>tu siguiente paso</b> y lo que conviene cambiar. Guarda las versiones en «Mis textos» y compáralas.</p>
-          <p><b>Privacidad</b>: los archivos se leen solo en tu navegador y tus textos se quedan en tu dispositivo; nada se envía a ningún servidor. Aun así, si el informe tiene <b>datos de pacientes</b>, pulsa «Nuevo» al terminar para borrar el borrador, y anonimízalo antes de guardarlo o compartir el informe de legibilidad (por ejemplo, con el <a href="https://cjgaland.github.io/anonimizador-rgpd-web/" target="_blank" rel="noopener">Anonimizador RGPD</a>).</p>
+          <p><b>Privacidad</b>: los archivos se leen solo en tu navegador y tus textos se quedan en tu dispositivo; nada se envía a ningún servidor. Aun así, si el informe tiene <b>datos de pacientes</b>, pulsa «Nuevo» al terminar para borrar el borrador, y anonimízalo antes de guardarlo o compartir el informe de legibilidad<!--[eco]--> (por ejemplo, con el <a href="https://cjgaland.github.io/anonimizador-rgpd-web/" target="_blank" rel="noopener">Anonimizador RGPD</a>)<!--[/eco]-->.</p>
         </div>
         <label class="modal-check"><input type="checkbox" id="modal-no-repetir" /> <span>No mostrar este mensaje al iniciar</span></label>
       </div>
@@ -99,7 +99,7 @@
         <button class="icon-btn modal-close" id="btn-acerca-cerrar" aria-label="Cerrar">✕</button>
       </div>
       <div class="modal-body">
-        <p>Aplicación web (PWA) estática, sin dependencias externas y utilizable sin conexión, para medir la legibilidad de los textos dirigidos a pacientes y mejorarlos. Acompaña al capítulo 24, «Escribir claro para pacientes», de la <i>Guía de Calidad y Seguridad del Paciente</i>.</p>
+        <p>Aplicación web (PWA) estática, sin dependencias externas y utilizable sin conexión, para medir la legibilidad de los textos dirigidos a pacientes y mejorarlos.<!--[eco]--> Acompaña al capítulo 24, «Escribir claro para pacientes», de la <i>Guía de Calidad y Seguridad del Paciente</i>.<!--[/eco]--></p>
         <div class="modal-bloque">
           <strong>Fórmula, escala y fuentes</strong>
           <ul>
@@ -110,11 +110,19 @@
             <li><b>Cómo cuenta la app</b>: frases terminadas en punto, interrogación, exclamación, punto y coma o salto de línea (cada elemento de una lista cuenta como frase); sílabas por reglas del castellano (diptongos, triptongos e hiatos con tilde); cada número cuenta como una palabra de dos sílabas. El resultado puede diferir algún punto del programa INFLESZ original.</li>
           </ul>
         </div>
+        <!-- [eco] -->
         <div class="modal-bloque">
           <strong>Apps hermanas</strong>
           <p>Forma parte del ecosistema de apps de calidad y seguridad del paciente de los autores: <a href="https://cjgaland.github.io/dafo/" target="_blank" rel="noopener">DAFO · CAME</a>, <a href="https://cjgaland.github.io/flujograma/" target="_blank" rel="noopener">Flujograma</a>, <a href="https://cjgaland.github.io/amfe/" target="_blank" rel="noopener">AMFE</a>, <a href="https://cjgaland.github.io/mapa-riesgos/" target="_blank" rel="noopener">Mapa de Riesgos</a>, <a href="https://cjgaland.github.io/indicadores-calidad/" target="_blank" rel="noopener">Indicadores</a>, <a href="https://cjgaland.github.io/tamano-muestral/" target="_blank" rel="noopener">Tamaño Muestral</a>, <a href="https://cjgaland.github.io/auditorias/" target="_blank" rel="noopener">Auditorías</a>, <a href="https://cjgaland.github.io/rondas-seguridad/" target="_blank" rel="noopener">Rondas de Seguridad</a> y <a href="https://cjgaland.github.io/lectura-critica/" target="_blank" rel="noopener">Lectura Crítica</a>.</p>
           <p><b>Herramientas de apoyo</b>: <a href="https://cjgaland.github.io/anonimizador-rgpd-web/" target="_blank" rel="noopener">Anonimizador RGPD</a> y <a href="https://cjgaland.github.io/normalizador-bibliografico/" target="_blank" rel="noopener">Normalizador Bibliográfico</a>.</p>
         </div>
+        <!-- [/eco] -->
+        <!-- [ind]
+        <div class="modal-bloque">
+          <strong>Otras herramientas</strong>
+          <p>{{MENCION}}</p>
+        </div>
+        [/ind] -->
         <div class="modal-bloque">
           <strong>Instalar en el móvil</strong>
           <p>En iPhone, con Safari: Compartir → «Añadir a pantalla de inicio». En Android, con Chrome: menú → «Instalar aplicación».</p>

@@ -27,8 +27,16 @@ PWA estática (sin build, sin dependencias, sin CDN) que mide la legibilidad de 
 - Ley 41/2002, arts. 4.2, 8.2 y 10.1 (BOE consolidado).
 - Limitación: el recuento de sílabas es aproximado y puede diferir algún punto del programa INFLESZ original. Pendiente: contrastar con algún texto de referencia puntuado por el programa original.
 
+## Edición independiente (desde el 2026-10-26)
+Hay una versión de Legibilidad para regalar sola, sin enlaces al resto del ecosistema: `../Edición independiente/` (repositorio git propio; publicada el 2026-10-26 en `herramientas-calidad/legibilidad` → https://herramientas-calidad.github.io/legibilidad/). **No se edita a mano**: la fabrica `node generar.mjs legibilidad` desde `Ecosistema Calidad/Ediciones independientes/` (diseño en `DISEÑO_EDICIONES.md`, uso en `LEEME.md`, ficha en `apps/legibilidad.json`). Para actualizarla: `node generar.mjs legibilidad --commit` y `git push` en la edición.
+- **Marcas** (comentarios; no cambian nada en la app del ecosistema): `[eco]`…`[/eco]` = solo ecosistema, se quita en la edición; `/* [ind]` … `[/ind] */` (o `<!-- [ind]` … `[/ind] -->`) = solo edición, se descomenta. En línea propia o dentro de una línea (`/*[eco]*/…/*[/eco]*/`, `<!--[eco]-->…<!--[/eco]-->`). Dentro de un texto HTML de app.js, usar la forma `<!-- -->`. Los tests que se pasan sobre la edición también pasan por las marcas.
+- **Al añadir** un enlace a otra app, un «Traer de…», una mención a la Guía, un texto sobre pasar datos «en el mismo navegador» o una entrada de NOVEDADES que solo hable del ecosistema: rodearlo con `[eco]` y, si hace falta, poner su alternativa con `[ind]`. Una clave nueva de `localStorage` se añade a `claves` en la ficha. Si se olvida, el generador o su verificación fallan y dicen dónde. Comentarios y rótulos sueltos se cambian en la ficha (`reemplazos`).
+- Se quitan las citas al capítulo 24 de la Guía y el enlace al Anonimizador RGPD de la nota de privacidad; el pie del informe lleva la dirección de la edición. pdf.js (`vendor/`) se copia tal cual.
+- En la edición: prefijo de datos `ei-legibilidad-` (también la caché), sin tests, sin `CLAUDE.md` y con su propio README (`apps/legibilidad.README.md`).
+
 ## Versiones
 
 - **v2026.01 (2026-10-25)**: primera versión, 82 pruebas. **Publicada** el 2026-10-25 en `cjgaland/legibilidad` · https://cjgaland.github.io/legibilidad/ (GitHub Pages, rama `main`). Publicar = commit + `git push`. Pendiente: enlazarla desde el portal y las hermanas.
 - **v2026.02 (2026-10-25)**: subir informe (PDF, DOCX, TXT, MD; arrastrar y soltar; solo en el navegador), veredicto por apartados y párrafos más difíciles (también en los informes PDF/Word), «Qué cambiar» en cada párrafo difícil y botón «Cambiar» para tecnicismos, pdf.js 6.4.299 local. 82 + 83 pruebas. **Publicada** el 2026-10-25.
 - **v2026.03 (2026-10-26)**: enlace a la nueva app hermana Lectura Crítica (`/Users/Trabajo/Desktop/Calidad&Seguridad/Ecosistema Calidad/LecturaCritica/Aplicación/`, https://cjgaland.github.io/lectura-critica/) en «Acerca de».
+- **2026-10-26 (sin cambio de versión)**: marcas `[eco]`/`[ind]` para la edición independiente (apartado «Edición independiente»). La app del ecosistema no cambia.

@@ -258,7 +258,7 @@
     const sel = (id, def) => `<select id="${id}" class="leg-input">${opciones.map((o, i) => `<option value="${esc(o.id)}" ${i === def ? "selected" : ""}>${esc(o.titulo)}</option>`).join("")}</select>`;
     const n = datos.textos.length;
     v.innerHTML = `<h1 class="page-title">Comparar dos versiones</h1>
-      <p class="page-lead">El antes y el después de un texto. Elige dos de Mis textos o compara el ejemplo de la Guía.</p>
+      <p class="page-lead">El antes y el después de un texto. Elige dos de Mis textos o compara el ejemplo<!--[eco]--> de la Guía<!--[/eco]-->.</p>
       <div class="leg-comp">
         <div class="card"><label class="field-label" for="c-a">Antes</label>${sel("c-a", n ? Math.min(1, n - 1) : n)}<div id="r-a"></div></div>
         <div class="card"><label class="field-label" for="c-b">Después</label>${sel("c-b", n ? 0 : n + 1)}<div id="r-b"></div></div>
@@ -283,7 +283,7 @@
         <div class="toolbar">${n > 0 ? `<a class="btn" href="#/aprende/${n - 1}">← Anterior</a>` : ""}${n < C.TEMAS.length - 1 ? `<a class="btn btn--primary" href="#/aprende/${n + 1}">Siguiente →</a>` : `<a class="btn btn--primary" href="#/prueba">Ponte a prueba →</a>`}</div>`;
       return;
     }
-    v.innerHTML = `<h1 class="page-title">Aprende</h1><p class="page-lead">Lo esencial del capítulo 24 de la Guía, en cinco temas breves.</p>
+    v.innerHTML = `<h1 class="page-title">Aprende</h1><p class="page-lead"><!--[eco]-->Lo esencial del capítulo 24 de la Guía, en cinco temas breves.<!--[/eco]--><!--[ind]Lo esencial para escribir claro para pacientes, en cinco temas breves.[/ind]--></p>
       ${C.TEMAS.map((t, i) => `<a class="card leg-enlace" href="#/aprende/${i}"><span class="leg-num">${i + 1}</span> ${esc(t.titulo)}</a>`).join("")}
       <h2 class="leg-h2">Practica</h2>
       ${C.EJERCICIOS.map((e, i) => `<div class="card"><b>${esc(e.titulo)}</b><p class="leg-cita">${esc(e.texto)}</p><details><summary>Ver una propuesta</summary><p>${esc(e.pista)}</p></details><button class="btn" data-ej="${i}">Analizar esta frase</button></div>`).join("")}`;
@@ -330,7 +330,7 @@
   }
   function informePDF(titulo, texto, titulos) {
     if (!String(texto).trim()) return toast("No hay texto que analizar.");
-    $("#informe").innerHTML = bloquesHTML(L.documentoInforme(titulo, texto, null, titulos)) + `<p class="inf-pie">Generado con la app Legibilidad · https://cjgaland.github.io/legibilidad/</p>`;
+    $("#informe").innerHTML = bloquesHTML(L.documentoInforme(titulo, texto, null, titulos)) + `<p class="inf-pie">Generado con la app Legibilidad · <!--[eco]-->https://cjgaland.github.io/legibilidad/<!--[/eco]--><!--[ind]{{URL}}[/ind]--></p>`;
     document.body.classList.add("imprimiendo");
     setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove("imprimiendo"), 500); }, 50);
   }

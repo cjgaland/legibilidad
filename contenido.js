@@ -78,6 +78,7 @@
 
   const NOVEDADES = [
     // [eco]
+    { v: "2026.04", fecha: "2026-10-27", items: ["En «Acerca de», enlace a la nueva app hermana ACR · Ishikawa: busca las causas de fondo de un problema o de un incidente con el diagrama de Ishikawa (espina de pescado) y el análisis causa raíz, sin buscar culpables; sus acciones de mejora llevan indicador."] },
     { v: "2026.03", fecha: "2026-10-26", items: ["En «Acerca de», enlace a la nueva app hermana Lectura Crítica: lee críticamente un artículo paso a paso con las plantillas de CASPe, calculadoras y un veredicto."] },
     // [/eco]
     { v: "2026.02", fecha: "2026-10-25", items: ["Subir informe: lee PDF, Word (.docx), TXT y MD con el botón o arrastrando el archivo. Se lee solo en tu navegador y no se envía a ningún sitio. Los PDF escaneados no se pueden leer.", "Veredicto por apartados: la legibilidad de cada título o apartado, el más difícil señalado y los párrafos más difíciles, con «Ver en el texto» para retocarlos. También en el informe en PDF y Word.", "Qué cambiar en cada párrafo difícil: frases largas, tecnicismos con su alternativa, impersonales, siglas y palabras largas. Botón «Cambiar» para poner la alternativa de un tecnicismo (en el párrafo o en todo el texto), con «Deshacer».", "Lector de PDF incluido en la app (pdf.js de Mozilla 6.4.299), para que funcione sin conexión."] },

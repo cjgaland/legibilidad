@@ -14,7 +14,7 @@
 (function (raiz) {
   "use strict";
 
-  const VERSION = "2026.03";
+  const VERSION = "2026.04";
   const UMBRAL = 55;                 // recomendado para textos de salud
   const FRASE_LARGA = 20;            // palabras
   const PALABRA_LARGA = 5;           // sílabas
